@@ -39,7 +39,7 @@ def clean_df(expenses):
 
 
 def colors_from_palette(palette, n_colors):
-    """ 
+    """
     Params
     ----------------
     palette: dict, bokeh palette with the number of colors as keys
@@ -71,6 +71,54 @@ def colors_from_palette(palette, n_colors):
     return colors
 
 
+def aggregate_categories(expenses):
+    """ Reduces the number of categories in the expenses df, by aggregating
+    into main categories.
+
+    Params
+    ----------------
+    expenses: dataframe
+
+    Returns
+    ---------------
+    expenses: dataframe
+    """
+    all_cats = expenses['Category'].unique()
+
+    # TODO move this constant to some central place
+    cat_to_subcat = {
+        'Utilities': ['Heat/gas', 'TV/Phone/Internet', 'Electricity', 'Water', 'Utilities - Other'],
+        'Rent': ['Rent'],
+        'Household supplies': ['Household supplies', 'Furniture', 'Electronics', 'Home - Other'],
+        'Groceries': ['Groceries', 'Food and drink - Other'],
+        'Dining out': ['Dining out'],
+        'Entertainment': ['Entertainment - Other', 'Games', 'Movies', 'Music'],
+        'Travel': ['Hotel', 'Plane', 'Transportation - Other'],
+        'Other': ['General', 'Clothing', 'Life - Other', 'Sports', 'Gifts', 'Education']
+    }
+
+    # check wether all expense categories are present in aggregation_dict
+    flattened_dict_cats = [cat for subcat_list in
+                           [v for k, v in cat_to_subcat.items()] for cat in subcat_list]
+    cat_difference = set(all_cats).difference(set(flattened_dict_cats))
+
+    if len(cat_difference) > 0:
+        raise ValueError(
+            f'The following categories appear in the data, but are not represented in the category aggregation dict: {cat_difference}'
+        )
+
+    # invert the category_to_subcategory dict
+    subcat_to_cat = {}
+    for cat, subcat_list in cat_to_subcat.items():
+        subcat_to_cat.update({subcat: cat for subcat in subcat_list})
+
+    print(subcat_to_cat)
+
+    # add new column to expenses
+
+    return expenses
+
+
 if __name__ == '__main__':
     # some tests for the utility functions
     from bokeh.palettes import Category20
@@ -88,3 +136,5 @@ if __name__ == '__main__':
     colors = colors_from_palette(Category20, n_colors)
     print(colors, '\n')
     assert n_colors == len(colors)
+
+    expenses = aggregate_categories(expenses)

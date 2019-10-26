@@ -22,10 +22,7 @@ if __name__ == '__main__':
     source = ColumnDataSource(monthlyByCategoryUnstacked)
     colNames = list(monthlyByCategoryUnstacked)
     colors = colors_from_palette(palette, len(colNames))
-    # colors = colors[0:len(colNames)]
-    # print(len(colNames))
-    # print(len(colors))
-    # print(colors)
+
 
     monthlyBars = figure(x_axis_label='Month', y_axis_label='Expenses', x_axis_type='datetime',
                          plot_height=500, plot_width=800,
