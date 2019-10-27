@@ -1,4 +1,6 @@
-from utils import read_newest_csv, clean_df, colors_from_palette
+import utils
+import data_preparation
+from constants import CAT_TO_SUBCAT
 import pandas as pd
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.plotting import figure
@@ -6,13 +8,11 @@ from bokeh.io import show
 from bokeh.palettes import Category20 as palette
 from bokeh.core.properties import value
 from bokeh.models import Legend
+from bokeh.layouts import gridplot, row
+from bokeh.models.formatters import DatetimeTickFormatter, NumeralTickFormatter
 
 if __name__ == '__main__':
-    # get data as expenses df
-    expenses = read_newest_csv()
-    expenses = clean_df(expenses)
-    print('cleaned data')
-    print(expenses.head())
+    expenses = data_preparation.get_expenses_df()
 
     # monthly by category data
     monthlyByCategory = expenses.groupby('Category').resample('BMS').sum()
@@ -20,17 +20,18 @@ if __name__ == '__main__':
     monthlyByCategoryUnstacked = monthlyByCategoryUnstacked.fillna(0)
 
     source = ColumnDataSource(monthlyByCategoryUnstacked)
-    colNames = list(monthlyByCategoryUnstacked)
-    colors = colors_from_palette(palette, len(colNames))
-
+    col_names = CAT_TO_SUBCAT.keys()
+    # TODO make color-selection more understandable
+    colors = [palette[20][i] for i in [1, 5, 3, 7, 15]]
+    print(colors)
 
     monthlyBars = figure(x_axis_label='Month', y_axis_label='Expenses', x_axis_type='datetime',
                          plot_height=500, plot_width=800,
                          tools="hover", tooltips="$name: @$name")
 
-    monthlyBars.vbar_stack(stackers=colNames, x='Date',
+    monthlyBars.vbar_stack(stackers=col_names, x='Date',
                            width=2e9, color=colors,
-                           source=source, legend=[value(x) for x in colNames])
+                           source=source, legend=[value(x) for x in col_names])
 
     monthlyBars.y_range.start = 0
 
@@ -38,13 +39,6 @@ if __name__ == '__main__':
     # monthlyBars.legend[0].plot = None
     monthlyBars.add_layout(legend, 'right')
 
-    # output_notebook()
-    # show(monthlyBars)
-
-    ################################################################################
-
-    from bokeh.layouts import gridplot, row
-    from bokeh.models.formatters import DatetimeTickFormatter, NumeralTickFormatter
 
     dateFormatter = DatetimeTickFormatter(months=["%m/%y"])
     yFormatter = NumeralTickFormatter(format='0a')
@@ -92,7 +86,7 @@ if __name__ == '__main__':
     ###################################################################################
 
     plots = []
-    for i, col in enumerate(colNames):
+    for i, col in enumerate(col_names):
         entries_field = f'{col}_entries'
         p = figure(title=col, x_axis_label=None, y_axis_label=None, x_axis_type='datetime',
                    plot_height=200, plot_width=240,
