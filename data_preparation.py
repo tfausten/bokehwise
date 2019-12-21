@@ -5,6 +5,7 @@ import os
 import re
 from constants import CAT_TO_SUBCAT, DATA_PATH_PATTERN
 
+
 def get_expenses_df():
     expenses = read_newest_csv()
     expenses = clean_df(expenses)
@@ -13,6 +14,7 @@ def get_expenses_df():
     print(expenses.head())
 
     return expenses
+
 
 def read_newest_csv():
     """ Returns the newest splitwise-exported csv data as a dataframe,
@@ -46,8 +48,8 @@ def clean_df(expenses):
 
 
 def aggregate_categories(expenses):
-    """ Reduces the number of categories in the expenses df, by aggregating
-    into main categories.
+    """ Add a Category column with a reduces number of cateogories and rename original category-column
+    to Subcategory.
 
     Params
     ----------------
@@ -55,16 +57,15 @@ def aggregate_categories(expenses):
 
     Returns
     ---------------
-    aggregated: dataframe
+    expenses: dataframe
     """
-    aggregated = expenses.rename(columns={'Category': 'Subcategory'})
-    all_subcats = aggregated['Subcategory'].unique()
+    expenses = expenses.rename(columns={'Category': 'Subcategory'})
+    all_subcats = expenses['Subcategory'].unique()
 
     # check wether all expense categories are present in aggregation_dict
     flattened_dict_cats = [cat for subcat_list in
                            [v for k, v in CAT_TO_SUBCAT.items()] for cat in subcat_list]
     cat_difference = set(all_subcats).difference(set(flattened_dict_cats))
-
     if len(cat_difference) > 0:
         raise ValueError(
             f'The following categories appear in the data, but are not represented in the category aggregation dict: {cat_difference}'
@@ -75,11 +76,9 @@ def aggregate_categories(expenses):
     for cat, subcat_list in CAT_TO_SUBCAT.items():
         subcat_to_cat.update({subcat: cat for subcat in subcat_list})
 
-    print(subcat_to_cat)
-
     # add new column to aggregated
-    aggregated['Category'] = aggregated['Subcategory'].map(subcat_to_cat)
-    return aggregated
+    expenses['Category'] = expenses['Subcategory'].map(subcat_to_cat)
+    return expenses
 
 
 if __name__ == '__main__':
@@ -91,7 +90,8 @@ if __name__ == '__main__':
 
     expenses = clean_df(expenses)
     print('cleaned expenses')
-    print(expenses.tail(), '\n')
+    print(expenses.head(), '\n')
 
     expenses = aggregate_categories(expenses)
+    print('added aggregated category column')
     print(expenses.head())

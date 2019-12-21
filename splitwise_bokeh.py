@@ -1,7 +1,5 @@
-import utils
 import data_preparation
 from constants import CAT_TO_SUBCAT
-import pandas as pd
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.plotting import figure
 from bokeh.io import show
@@ -18,6 +16,7 @@ if __name__ == '__main__':
     monthly_data = expenses.groupby('Category').resample('BMS').sum()
     monthly_data = monthly_data.Cost.unstack(level=0)
     monthly_data = monthly_data.fillna(0)
+    print('\nmonthly_data\n', monthly_data.head())
 
     source = ColumnDataSource(monthly_data)
     col_names = CAT_TO_SUBCAT.keys()
@@ -59,5 +58,5 @@ if __name__ == '__main__':
     main_tab = Panel(child=monthly_overview, title='Overview')
     panels.insert(0, main_tab)
 
-    tabs = Tabs(tabs=panels)
-    show(tabs)
+    # tabs = Tabs(tabs=panels)
+    # show(tabs)
