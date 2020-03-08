@@ -42,8 +42,10 @@ def clean_df(expenses):
     columns_to_keep = ['Description', 'Category', 'Cost', 'Currency']
     cleaned = expenses[columns_to_keep].iloc[:-1]  # remove total balance row
     cleaned = cleaned[cleaned['Category'] != 'Payment']
-    cleaned.Cost = pd.to_numeric(cleaned.Cost)
+    cleaned.Cost = pd.to_numeric(cleaned.Cost, errors='coerce')
     cleaned.Category = pd.Categorical(cleaned.Category)
+
+    # TODO convert foreign currencies to JPY
     return cleaned
 
 
@@ -93,5 +95,5 @@ if __name__ == '__main__':
     print(expenses.head(), '\n')
 
     expenses = aggregate_categories(expenses)
-    print('added aggregated category column')
+    print('added aggregated category column)')
     print(expenses.head())

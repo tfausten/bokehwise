@@ -39,9 +39,9 @@ if __name__ == '__main__':
     legend = monthly_overview.legend[0]
     monthly_overview.add_layout(legend, 'right')
 
-    ###################################################################################
-
     panels = []
+    panels.append(Panel(child=monthly_overview, title='Overview'))
+
     for i, col_name in enumerate(col_names):
         p = figure(x_axis_label='Month', y_axis_label='Expenses',
                    x_axis_type='datetime', tools="hover, tap",
@@ -55,8 +55,6 @@ if __name__ == '__main__':
         panels.append(Panel(child=p, title=col_name))
 
     # main_grid = gridplot(category_plots, ncols=3)
-    main_tab = Panel(child=monthly_overview, title='Overview')
-    panels.insert(0, main_tab)
 
-    # tabs = Tabs(tabs=panels)
-    # show(tabs)
+    tabs = Tabs(tabs=panels)
+    show(tabs)

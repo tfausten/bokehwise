@@ -15,7 +15,7 @@ CAT_TO_SUBCAT['Travel & Entertainment'] = ['Hotel', 'Plane', 'Transportation - O
                                            'Entertainment - Other', 'Games', 'Movies', 'Music', 'Sports']
 
 CAT_TO_SUBCAT['Other'] = [
-    'General', 'Clothing', 'Life - Other', 'Gifts', 'Education', 'Insurance']
+    'General', 'Clothing', 'Life - Other', 'Gifts', 'Education', 'Insurance', ' ']
 
 
 DATA_PATH_PATTERN = os.path.normpath('./data/*_export.csv')
