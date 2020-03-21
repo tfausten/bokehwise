@@ -1,11 +1,12 @@
 import data_preparation
-from constants import CAT_TO_SUBCAT
+from constants import CAT_TO_SUBCAT, hatch_patterns
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 from bokeh.io import curdoc
 from bokeh.palettes import Category20 as palette
 from bokeh.models.formatters import DatetimeTickFormatter, NumeralTickFormatter
 from bokeh.models.widgets import Panel, Tabs
+import itertools
 
 expenses = data_preparation.get_expenses_df()
 
@@ -54,10 +55,13 @@ for i, col_name in enumerate(col_names):
     subcat_source = ColumnDataSource(subcat_data)
     subcats = subcat_data.columns.tolist()
 
+    hatch_patterns = list(itertools.islice(itertools.cycle(hatch_patterns),
+                                           0, len(subcats)))
+
     p = create_default_fig()
     p.vbar_stack(stackers=subcats, x='Date', width=2e9,
-                 color=colors[i], line_color='black', source=subcat_source,
-                 legend_label=subcats)
+                 color=colors[i], line_color='white', source=subcat_source,
+                 legend_label=subcats, hatch_pattern=hatch_patterns)
 
     panels.append(Panel(child=p, title=col_name))
 

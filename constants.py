@@ -14,3 +14,7 @@ CAT_TO_SUBCAT['Other'] = [
     'General', 'Clothing', 'Life - Other', 'Gifts', 'Education', 'Insurance', ' ']
 
 DATA_PATH_PATTERN = os.path.normpath('./data/*_export.csv')
+
+# bokeh hatch patterns to use in bars
+hatch_patterns = ['blank', 'dot', 'ring', 'horizontal_line',
+                  'vertical_line', 'cross', 'horizontal_dash', 'vertical_dash']

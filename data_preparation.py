@@ -1,7 +1,6 @@
 import glob
 import pandas as pd
 import datetime
-import os
 import re
 from constants import CAT_TO_SUBCAT, DATA_PATH_PATTERN
 
