@@ -9,6 +9,7 @@ def get_expenses_df():
     expenses = read_newest_csv()
     expenses = clean_df(expenses)
     expenses = aggregate_categories(expenses)
+    expenses = expenses.sort_values('Date', ascending=False)
     print('cleaned and preprocessed data:')
     print(expenses.head())
 
@@ -38,9 +39,12 @@ def read_newest_csv():
 
 
 def clean_df(expenses):
+    """ select columns, delete balance and payment rows, convert types as needed
+    """
     columns_to_keep = ['Description', 'Category', 'Cost', 'Currency']
-    cleaned = expenses[columns_to_keep].iloc[:-1]  # remove total balance row
+    cleaned = expenses.filter(columns_to_keep)
     cleaned = cleaned[cleaned['Category'] != 'Payment']
+    cleaned = cleaned[cleaned['Description'] != 'Total balance']
     cleaned.Cost = pd.to_numeric(cleaned.Cost, errors='coerce')
     cleaned.Category = pd.Categorical(cleaned.Category)
 
