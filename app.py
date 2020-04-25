@@ -1,10 +1,12 @@
 import data_preparation
-from bokeh.models import ColumnDataSource, TapTool, BooleanFilter, CDSView
+from bokeh.models import ColumnDataSource, BooleanFilter, CDSView
 from bokeh.plotting import figure
 from bokeh.io import curdoc
 from bokeh.palettes import Category20c
-from bokeh.models.formatters import DatetimeTickFormatter, NumeralTickFormatter
-from bokeh.models.widgets import Panel, Tabs, DataTable, TableColumn, DateFormatter
+from bokeh.models.formatters import NumeralTickFormatter
+from bokeh.models.widgets import (
+    Panel, Tabs, DataTable, TableColumn, DateFormatter
+)
 from bokeh.layouts import row
 from bokeh.events import Tap
 import itertools
@@ -50,7 +52,8 @@ category_colors = get_cycled_list(category_colors, len(col_names))
 monthly_overview = MonthlyGraph()
 monthly_overview.vbar_stack(stackers=col_names, x='Date',
                             width=2e9, color=category_colors,
-                            source=monthly_category_source, legend_label=col_names)
+                            source=monthly_category_source,
+                            legend_label=col_names)
 
 
 expenses_source = ColumnDataSource(expenses_df)
@@ -98,10 +101,16 @@ overview_panel = Panel(
 
 
 def bar_tap_callback(event):
-    """ update the expenses table to show only entries of the selected month """
+    """
+    update the expenses table to show only entries of the selected month
+    """
     # TODO when no bar is selected list index out of range
-    selected = monthly_category_source.selected.indices[-1]
-    selected_month = monthly_category_df.index[selected].month
+    try:
+        selected = monthly_category_source.selected.indices[-1]
+        print(selected)
+        selected_month = monthly_category_df.index[selected].month
+    except IndexError:
+        selected_month = None
     expenses_table = get_expenses_table(selected_month)
     overview_row.children[1] = expenses_table
 
@@ -112,12 +121,12 @@ panels = [overview_panel]
 
 # make single-category plots, and group the data by subcategories
 main_color_idxs_cycled = itertools.cycle(main_color_idxs)
-for i, category in enumerate(col_names):
+for category in col_names:
     subcat_df = expenses_df[expenses_df['Category'] == category]
     monthly_subcat_df = subcat_df.groupby('Subcategory').resample('BMS').sum()
     monthly_subcat_df = monthly_subcat_df.Cost.unstack(level=0)
     monthly_subcat_df = monthly_subcat_df.fillna(0)
-    monthly_subcat_source = ColumnDataSource(monthly_subcat_df)
+    subcat_source = (ColumnDataSource(monthly_subcat_df))
     subcats = monthly_subcat_df.columns.tolist()
 
     color_idx = next(main_color_idxs_cycled)
@@ -125,7 +134,8 @@ for i, category in enumerate(col_names):
     colors = get_cycled_list(colors, len(subcats))
     p = MonthlyGraph()
     p.vbar_stack(stackers=subcats, x='Date', width=2e9,
-                 color=colors, line_color='white', source=monthly_subcat_source,
+                 color=colors, line_color='white',
+                 source=subcat_source,
                  legend_label=subcats)
     expenses_table = get_expenses_table(category=category)
 
@@ -135,16 +145,22 @@ for i, category in enumerate(col_names):
         child=subcat_row,
         title=category)
 
-    def bar_tap_callback_subcat(event):
-        """ update the expenses table to show only entries of the selected month """
-        # TODO does not work for panels because monthly subcat source get overwritten
-        # in each pass through the loop. source needs to be created as a list and then
-        # referenced by index
-        print(monthly_subcat_source.selected.indices)
-        selected = monthly_subcat_source.selected.indices[-1]
-
-        print(selected)
-        selected_month = monthly_subcat_df.index[selected].month
+    def bar_tap_callback_subcat(event, subcat_source=subcat_source,
+                                monthly_subcat_df=monthly_subcat_df,
+                                subcat_row=subcat_row):
+        """
+        update the expenses table to show only entries of the selected month
+        """
+        # TODO does not work for panels because monthly subcat source
+        # get overwritten in each pass through the loop. source needs
+        # to be created as a list and then referenced by index
+        print(subcat_source.selected.indices)
+        try:
+            selected = subcat_source.selected.indices[-1]
+            print(selected)
+            selected_month = monthly_subcat_df.index[selected].month
+        except IndexError:
+            selected_month = None
         expenses_table = get_expenses_table(selected_month, category)
         subcat_row.children[1] = expenses_table
     p.on_event(Tap, bar_tap_callback_subcat)
